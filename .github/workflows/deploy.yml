@@ -16,15 +16,14 @@ jobs:
         shell: powershell
         run: |
           docker stop my-app
-          if ($LASTEXITCODE -ne 0) { Write-Host "No container to stop" }
           docker rm my-app
-          if ($LASTEXITCODE -ne 0) { Write-Host "No container to remove" }
+          exit 0
 
       - name: Remove old image
         shell: powershell
         run: |
           docker rmi my-app:latest
-          if ($LASTEXITCODE -ne 0) { Write-Host "No image to remove" }
+          exit 0
 
       - name: Build Docker image
         shell: powershell
