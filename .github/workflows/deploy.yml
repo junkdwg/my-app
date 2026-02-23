@@ -17,8 +17,8 @@ jobs:
 
       # 2. หยุด container เก่า (ถ้ามี) ไม่ error ถ้ายังไม่มี
       - name: Stop old container
-        run: |
-          docker stop my-app || true
+        shell: powershell
+        run: docker stop my-app; if ($LASTEXITCODE -ne 0) { exit 0 }
           docker rm my-app || true
 
       # 3. ลบ image เก่า (ถ้ามี)
