@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Hello from Docker!',
-    version: '1.0.0'
+    version: '2.0.0'
   });
 });
 
