@@ -1,38 +1,39 @@
 name: Build and Deploy
 
-# trigger เมื่อ push ขึ้น branch main
 on:
   push:
     branches: [main]
 
 jobs:
   deploy:
-    # ใช้ self-hosted runner บนเครื่องเรา
     runs-on: self-hosted
 
     steps:
-      # 1. ดึงโค้ดล่าสุดจาก GitHub
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. หยุด container เก่า (ถ้ามี) ไม่ error ถ้ายังไม่มี
       - name: Stop old container
         shell: powershell
-        run: docker stop my-app; if ($LASTEXITCODE -ne 0) { exit 0 }
-          docker rm my-app || true
+        run: |
+          docker stop my-app
+          if ($LASTEXITCODE -ne 0) { Write-Host "No container to stop" }
+          docker rm my-app
+          if ($LASTEXITCODE -ne 0) { Write-Host "No container to remove" }
 
-      # 3. ลบ image เก่า (ถ้ามี)
       - name: Remove old image
-        run: docker rmi my-app:latest || true
+        shell: powershell
+        run: |
+          docker rmi my-app:latest
+          if ($LASTEXITCODE -ne 0) { Write-Host "No image to remove" }
 
-      # 4. Build Docker image ใหม่
       - name: Build Docker image
+        shell: powershell
         run: docker build -t my-app:latest .
 
-      # 5. รัน container ใหม่
       - name: Run Docker container
+        shell: powershell
         run: docker run -d --name my-app -p 3000:3000 --restart unless-stopped my-app:latest
 
-      # 6. ตรวจสอบว่า container รันอยู่
       - name: Verify deployment
+        shell: powershell
         run: docker ps --filter "name=my-app"
