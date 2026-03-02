@@ -12,6 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Read version from .env
+        shell: powershell
+        run: |
+          $envContent = Get-Content .env | Where-Object { $_ -match "^APP_VERSION=" }
+          $version = $envContent -replace "APP_VERSION=", ""
+          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
+          Write-Host "Version: $version"
+        
       - name: Stop old container
         shell: powershell
         run: |
@@ -27,7 +35,7 @@ jobs:
 
       - name: Build Docker image
         shell: powershell
-        run: docker build -t my-app:latest .
+        run: docker build -t my-app:${{ env.APP_VERSION }} -t my-app:latest .
 
       - name: Run Docker container
         shell: powershell
