@@ -38,9 +38,8 @@ jobs:
 
       - name: Run Docker container
         shell: powershell
-        run: |
-          docker run -d --name my-app -p 3000:3000 -e PORT=3000 -e APP_VERSION=2.0.0 -e APP_NAME=my-app --restart unless-stopped my-app:latest
-
+        run: docker run -d --name my-app -p 3000:3000 -e PORT=3000 -e APP_VERSION=${{ env.APP_VERSION }} -e APP_NAME=my-app --restart unless-stopped my-app:${{ env.APP_VERSION }}
+      
       - name: Verify deployment
         shell: powershell
         run: docker ps --filter "name=my-app"
