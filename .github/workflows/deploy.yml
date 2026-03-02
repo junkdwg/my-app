@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Docker image
         shell: powershell
-        run: docker build -t my-app:${{ env.APP_VERSION }} -t my-app:latest .
+        run: docker build -t my-app:${{ env.APP_VERSION }} .
 
       - name: Run Docker container
         shell: powershell
