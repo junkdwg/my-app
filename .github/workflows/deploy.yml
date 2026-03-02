@@ -12,11 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Read version from .env
+      - name: Read version from package.json
         shell: powershell
         run: |
-          $envContent = Get-Content .env | Where-Object { $_ -match "^APP_VERSION=" }
-          $version = $envContent -replace "APP_VERSION=", ""
+          $version = (Get-Content package.json | ConvertFrom-Json).version
           echo "APP_VERSION=$version" >> $env:GITHUB_ENV
           Write-Host "Version: $version"
         
