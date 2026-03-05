@@ -4,7 +4,7 @@ const app = require('../index');
 describe('GET /', () => {
   it('ต้องคืนค่า status 200', async () => {
     const res = await request(app).get('/');
-    expect(res.statusCode).toBe(9999);
+    expect(res.statusCode).toBe(200);
   });
 
   it('ต้องมี field message', async () => {
