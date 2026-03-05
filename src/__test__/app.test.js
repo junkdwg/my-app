@@ -1,4 +1,8 @@
 const request = require('supertest');
+
+// Mock connectDB ไม่ให้เชื่อมต่อ MongoDB จริงตอน test
+jest.mock('../db', () => jest.fn().mockResolvedValue(true));
+
 const app = require('../index');
 
 describe('GET /', () => {
