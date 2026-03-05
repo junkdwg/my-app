@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const connectDB = require('./db');
-const Item = require('.src/models/Item');
+const Item = require('./models/item');
 
 const app = express();
 app.use(express.json()); // รับ JSON body
