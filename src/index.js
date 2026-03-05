@@ -23,6 +23,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`[${APP_NAME}] v${APP_VERSION} running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`[${APP_NAME}] v${APP_VERSION} running on port ${PORT}`);
+  });
+}
+
+module.exports = app; // ← export ให้ Jest ใช้
