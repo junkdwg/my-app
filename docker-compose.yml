@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+
+  # แอป Node.js
+  app:
+    build: .
+    container_name: my-app
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - APP_NAME=my-app
+      - APP_VERSION=${APP_VERSION}
+      - MONGO_URI=mongodb://mongo:27017/mydb
+    depends_on:
+      - mongo          # รอให้ mongo ขึ้นก่อนค่อยรัน app
+    restart: unless-stopped
+
+  # MongoDB
+  mongo:
+    image: mongo:7
+    container_name: my-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db    # เก็บข้อมูลไว้ไม่หายตอน restart
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

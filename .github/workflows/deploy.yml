@@ -31,24 +31,21 @@ jobs:
       - name: Stop old container
         shell: powershell
         run: |
-          docker stop my-app
-          docker rm my-app
-          exit 0
-
-      - name: Remove old image
-        shell: powershell
-        run: |
-          docker rmi my-app:latest
+          docker compose down
           exit 0
 
       - name: Build Docker image
         shell: powershell
-        run: docker build -t my-app:${{ env.APP_VERSION }} .
+        run: docker build -t my-app:${{ env.APP_VERSION }} -t my-app:latest .
 
-      - name: Run Docker container
+      - name: Deploy with Docker Compose
         shell: powershell
-        run: docker run -d --name my-app -p 3000:3000 -e PORT=3000 -e APP_VERSION=${{ env.APP_VERSION }} -e APP_NAME=my-app --restart unless-stopped my-app:${{ env.APP_VERSION }}
-      
+        run: docker compose up -d --build
+
+      - name: Verify deployment
+        shell: powershell
+        run: docker compose ps
+
       - name: Verify deployment
         shell: powershell
         run: docker ps --filter "name=my-app"
