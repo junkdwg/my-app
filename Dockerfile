@@ -6,7 +6,7 @@ COPY . .
 
 # กำหนดค่า default (สามารถ override ด้วย -e ตอน docker run)
 ENV PORT=3000
-ENV APP_VERSION=1.0.0
+ENV APP_VERSION=1.0.1
 ENV APP_NAME=my-app
 
 EXPOSE $PORT

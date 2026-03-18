@@ -27,10 +27,29 @@ jobs:
         shell: powershell
         run: npm test
         
+      - name: Save current version for rollback
+        shell: powershell
+        run: |
+          $current = docker ps --filter "name=my-app" --format "{{.Image}}"
+          if ($current) {
+            echo "PREVIOUS_VERSION=$current" >> $env:GITHUB_ENV
+            Write-Host "Current version: $current"
+          } else {
+            echo "PREVIOUS_VERSION=" >> $env:GITHUB_ENV
+            Write-Host "No running container found"
+          }
+
       - name: Stop old container
         shell: powershell
         run: |
           docker compose down
+          exit 0
+
+      - name: Remove old image
+        shell: powershell
+        run: |
+          docker rmi my-app:${{ env.APP_VERSION }}
+          if ($LASTEXITCODE -ne 0) { Write-Host "No image to remove" }
           exit 0
 
       - name: Build Docker image
@@ -40,6 +59,37 @@ jobs:
       - name: Deploy with Docker Compose
         shell: powershell
         run: docker compose up -d --build
+
+      - name: Wait for container to start
+        shell: powershell
+        run: Start-Sleep -Seconds 15
+
+      - name: Health Check
+        shell: powershell
+        run: |
+          $response = Invoke-WebRequest -Uri http://localhost:3000/health -UseBasicParsing
+          if ($response.StatusCode -ne 200) {
+            Write-Host "Health check failed!"
+            exit 1
+          }
+          Write-Host "Health check passed!"
+
+      - name: Rollback on failure
+        if: failure()
+        shell: powershell
+        run: |
+          Write-Host "Deployment failed! Rolling back to ${{ env.PREVIOUS_VERSION }}"
+
+          # หยุด container ที่พัง
+          docker compose down
+
+          # ถ้ามี version เก่า ให้รันกลับมา
+          if ("${{ env.PREVIOUS_VERSION }}" -ne "") {
+            docker run -d --name my-app -p 3000:3000 -e PORT=3000 -e APP_VERSION=${{ env.PREVIOUS_VERSION }} -e APP_NAME=my-app --restart unless-stopped ${{ env.PREVIOUS_VERSION }}
+            Write-Host "Rollback successful!"
+          } else {
+            Write-Host "No previous version found"
+          }
 
       - name: Verify deployment
         shell: powershell
