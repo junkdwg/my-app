@@ -1,13 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./db');
-const Item = require('./models/item');
+const DeployLog = require('./models/item');
 const path = require('path');
 
 const app = express();
 app.use(express.json());
-
-// ✅ ต้องอยู่บนสุด ก่อน routes อื่น
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
@@ -16,37 +14,45 @@ const APP_NAME = process.env.APP_NAME || 'my-app';
 
 connectDB();
 
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: APP_NAME, version: APP_VERSION, uptime: process.uptime() });
 });
 
+// App info
 app.get('/api/info', (req, res) => {
   res.json({ message: `Hello from ${APP_NAME}!`, version: APP_VERSION });
 });
 
-app.get('/items', async (req, res) => {
+// GET deploy logs ทั้งหมด
+app.get('/api/deploys', async (req, res) => {
   try {
-    const items = await Item.find().sort({ createdAt: -1 });
-    res.json(items);
+    const logs = await DeployLog.find().sort({ deployedAt: -1 }).limit(20);
+    res.json(logs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/items', async (req, res) => {
+// POST บันทึก deploy log ใหม่
+app.post('/api/deploys', async (req, res) => {
   try {
-    const item = new Item(req.body);
-    await item.save();
-    res.status(201).json(item);
+    const log = new DeployLog(req.body);
+    await log.save();
+    res.status(201).json(log);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.delete('/items/:id', async (req, res) => {
+// GET สถิติ
+app.get('/api/stats', async (req, res) => {
   try {
-    await Item.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted successfully' });
+    const total = await DeployLog.countDocuments();
+    const success = await DeployLog.countDocuments({ status: 'success' });
+    const failed = await DeployLog.countDocuments({ status: 'failed' });
+    const latest = await DeployLog.findOne().sort({ deployedAt: -1 });
+    res.json({ total, success, failed, latest });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
