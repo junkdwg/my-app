@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require('express');
 const connectDB = require('./db');
 const Item = require('./models/Item');
@@ -7,7 +6,9 @@ const path = require('path');
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // serve static files
+
+// ✅ ต้องอยู่บนสุด ก่อน routes อื่น
+app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
 const APP_VERSION = process.env.APP_VERSION || '1.0.0';
@@ -15,6 +16,9 @@ const APP_NAME = process.env.APP_NAME || 'my-app';
 
 connectDB();
 
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', app: APP_NAME, version: APP_VERSION, uptime: process.uptime() });
+});
 
 app.get('/api/info', (req, res) => {
   res.json({ message: `Hello from ${APP_NAME}!`, version: APP_VERSION });
