@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My App - DevOps Project</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { font-size: 20px; color: #38bdf8; }
+
+    #version-badge {
+      background: #0ea5e9;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .container { max-width: 800px; margin: 40px auto; padding: 0 24px; }
+
+    .status-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 24px;
+    }
+
+    .status-item { flex: 1; text-align: center; }
+    .status-item .label { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+    .status-item .value { font-size: 22px; font-weight: bold; color: #38bdf8; }
+
+    .dot {
+      width: 10px; height: 10px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+
+    input {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus { border-color: #38bdf8; }
+
+    button {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #0284c7; }
+    button.danger { background: #ef4444; }
+    button.danger:hover { background: #dc2626; }
+
+    .item-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .item {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item-name { font-weight: 600; color: #e2e8f0; }
+    .item-desc { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+    .item-date { font-size: 11px; color: #475569; margin-top: 4px; }
+
+    .empty { text-align: center; color: #475569; padding: 32px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><span id="app-name">My App</span></h1>
+  <span id="version-badge">v-.-.-</span>
+</header>
+
+<div class="container">
+
+  <!-- Status Card -->
+  <div class="status-card">
+    <div class="status-item">
+      <div class="label">STATUS</div>
+      <div class="value"><span class="dot"></span>Online</div>
+    </div>
+    <div class="status-item">
+      <div class="label">VERSION</div>
+      <div class="value" id="stat-version">...</div>
+    </div>
+    <div class="status-item">
+      <div class="label">UPTIME</div>
+      <div class="value" id="stat-uptime">...</div>
+    </div>
+    <div class="status-item">
+      <div class="label">ITEMS</div>
+      <div class="value" id="stat-items">...</div>
+    </div>
+  </div>
+
+  <!-- Add Item -->
+  <div class="card">
+    <h2>เพิ่ม Item</h2>
+    <div class="input-row">
+      <input id="item-name" placeholder="ชื่อ Item" />
+      <input id="item-desc" placeholder="คำอธิบาย (ไม่บังคับ)" />
+      <button onclick="addItem()">เพิ่ม</button>
+    </div>
+  </div>
+
+  <!-- Item List -->
+  <div class="card">
+    <h2>รายการ Items</h2>
+    <div class="item-list" id="item-list">
+      <div class="empty">กำลังโหลด...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  async function loadInfo() {
+    const res = await fetch('/api/info');
+    const data = await res.json();
+    document.getElementById('app-name').textContent = data.message;
+    document.getElementById('version-badge').textContent = 'v' + data.version;
+    document.getElementById('stat-version').textContent = 'v' + data.version;
+  }
+
+  async function loadHealth() {
+    const res = await fetch('/health');
+    const data = await res.json();
+    const uptime = Math.floor(data.uptime);
+    const h = Math.floor(uptime / 3600);
+    const m = Math.floor((uptime % 3600) / 60);
+    const s = uptime % 60;
+    document.getElementById('stat-uptime').textContent =
+      `${h}h ${m}m ${s}s`;
+  }
+
+  async function loadItems() {
+    const res = await fetch('/items');
+    const items = await res.json();
+    document.getElementById('stat-items').textContent = items.length;
+    const list = document.getElementById('item-list');
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty">ยังไม่มี Item ลองเพิ่มดูสิ!</div>';
+      return;
+    }
+    list.innerHTML = items.map(item => `
+      <div class="item">
+        <div>
+          <div class="item-name">${item.name}</div>
+          <div class="item-desc">${item.description || '-'}</div>
+          <div class="item-date">${new Date(item.createdAt).toLocaleString('th-TH')}</div>
+        </div>
+        <button class="danger" onclick="deleteItem('${item._id}')">ลบ</button>
+      </div>
+    `).join('');
+  }
+
+  async function addItem() {
+    const name = document.getElementById('item-name').value.trim();
+    const description = document.getElementById('item-desc').value.trim();
+    if (!name) return alert('กรุณากรอกชื่อ Item');
+    await fetch('/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description })
+    });
+    document.getElementById('item-name').value = '';
+    document.getElementById('item-desc').value = '';
+    loadItems();
+  }
+
+  async function deleteItem(id) {
+    await fetch(`/items/${id}`, { method: 'DELETE' });
+    loadItems();
+  }
+
+  // โหลดข้อมูลตอนเริ่ม
+  loadInfo();
+  loadItems();
+  loadHealth();
+
+  // refresh uptime ทุก 1 วินาที
+  setInterval(loadHealth, 1000);
+</script>
+
+</body>
+</html>

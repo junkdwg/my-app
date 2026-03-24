@@ -2,39 +2,33 @@ require('dotenv').config();
 
 const express = require('express');
 const connectDB = require('./db');
-const Item = require('./models/item');
+const Item = require('./models/Item');
+const path = require('path');
 
 const app = express();
-app.use(express.json()); // รับ JSON body
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public'))); // serve static files
 
 const PORT = process.env.PORT || 3000;
 const APP_VERSION = process.env.APP_VERSION || '1.0.0';
 const APP_NAME = process.env.APP_NAME || 'my-app';
 
-// เชื่อมต่อ MongoDB
 connectDB();
 
-// GET / — info
-app.get('/', (req, res) => {
+
+app.get('/api/info', (req, res) => {
   res.json({ message: `Hello from ${APP_NAME}!`, version: APP_VERSION });
 });
 
-// GET /health — ตรวจสอบสถานะ
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', app: APP_NAME, version: APP_VERSION, uptime: process.uptime() });
-});
-
-// GET /items — ดึงข้อมูลทั้งหมด
 app.get('/items', async (req, res) => {
   try {
-    const items = await Item.find();
+    const items = await Item.find().sort({ createdAt: -1 });
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /items — เพิ่มข้อมูลใหม่
 app.post('/items', async (req, res) => {
   try {
     const item = new Item(req.body);
@@ -45,7 +39,6 @@ app.post('/items', async (req, res) => {
   }
 });
 
-// DELETE /items/:id — ลบข้อมูล
 app.delete('/items/:id', async (req, res) => {
   try {
     await Item.findByIdAndDelete(req.params.id);
