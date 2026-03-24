@@ -1,23 +1,22 @@
 const request = require('supertest');
 
-// Mock connectDB ไม่ให้เชื่อมต่อ MongoDB จริงตอน test
 jest.mock('../db', () => jest.fn().mockResolvedValue(true));
 
 const app = require('../index');
 
-describe('GET /', () => {
+describe('GET /api/info', () => {
   it('ต้องคืนค่า status 200', async () => {
-    const res = await request(app).get('/');
+    const res = await request(app).get('/api/info');
     expect(res.statusCode).toBe(200);
   });
 
   it('ต้องมี field message', async () => {
-    const res = await request(app).get('/');
+    const res = await request(app).get('/api/info');
     expect(res.body).toHaveProperty('message');
   });
 
   it('ต้องมี field version', async () => {
-    const res = await request(app).get('/');
+    const res = await request(app).get('/api/info');
     expect(res.body).toHaveProperty('version');
   });
 });
