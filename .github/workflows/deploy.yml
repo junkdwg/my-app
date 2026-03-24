@@ -44,3 +44,28 @@ jobs:
       - name: Verify deployment
         shell: powershell
         run: docker compose ps
+
+      - name: Log deploy success
+        shell: powershell
+        run: |
+          $body = @{
+            version = "${{ env.APP_VERSION }}"
+            status = "success"
+            branch = "main"
+            commit = "${{ github.sha }}".Substring(0, 7)
+            duration = "auto"
+          } | ConvertTo-Json
+          Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
+
+      - name: Log deploy failed
+        if: failure()
+        shell: powershell
+        run: |
+          $body = @{
+            version = "${{ env.APP_VERSION }}"
+            status = "failed"
+            branch = "main"
+            commit = "${{ github.sha }}".Substring(0, 7)
+            duration = "auto"
+          } | ConvertTo-Json
+          Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
