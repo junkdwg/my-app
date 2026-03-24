@@ -48,6 +48,9 @@ jobs:
       - name: Log deploy success
         shell: powershell
         run: |
+          # รอให้ app พร้อมก่อน
+          Start-Sleep -Seconds 10
+
           $body = @{
             version = "${{ env.APP_VERSION }}"
             status = "success"
@@ -55,7 +58,21 @@ jobs:
             commit = "${{ github.sha }}".Substring(0, 7)
             duration = "auto"
           } | ConvertTo-Json
-          Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
+
+          # retry 3 ครั้ง
+          $retries = 3
+          while ($retries -gt 0) {
+            try {
+              Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
+              Write-Host "Deploy log saved successfully"
+              break
+            } catch {
+              $retries--
+              Write-Host "Retrying... ($retries left)"
+              Start-Sleep -Seconds 5
+            }
+          }
+          exit 0
 
       - name: Log deploy failed
         if: failure()
@@ -68,9 +85,11 @@ jobs:
             commit = "${{ github.sha }}".Substring(0, 7)
             duration = "auto"
           } | ConvertTo-Json
+
           try {
             Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
+            Write-Host "Deploy log saved"
           } catch {
-            Write-Host "Could not log to app (app may not be running)"
+            Write-Host "Could not log (app may not be running)"
           }
           exit 0
