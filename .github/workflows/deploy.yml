@@ -68,4 +68,9 @@ jobs:
             commit = "${{ github.sha }}".Substring(0, 7)
             duration = "auto"
           } | ConvertTo-Json
-          Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
+          try {
+            Invoke-RestMethod -Uri "http://localhost:3000/api/deploys" -Method POST -Body $body -ContentType "application/json"
+          } catch {
+            Write-Host "Could not log to app (app may not be running)"
+          }
+          exit 0
