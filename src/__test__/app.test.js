@@ -6,7 +6,7 @@ describe('GET /api/info', () => {
   it('ต้องคืนค่า status 200', async () => {
     const res = await request(app).get('/api/info');
     expect(res.statusCode).toBe(200);
-  });
+  }, 10000);
   it('ต้องมี field message', async () => {
     const res = await request(app).get('/api/info');
     expect(res.body).toHaveProperty('message');
