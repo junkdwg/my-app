@@ -201,7 +201,7 @@
 
 <header>
   <div class="logo">
-    <h1>⚙️ CI/CD Dashboard</h1>
+    <h1>CI/CD Dashboard</h1>
     <span id="app-name-sub">my-app</span>
   </div>
   <div class="header-right">
@@ -217,17 +217,14 @@
     <div class="stat-card blue">
       <div class="stat-label">Total Deploys</div>
       <div class="stat-value" id="stat-total">-</div>
-      <div class="stat-sub">ตลอดการพัฒนา</div>
     </div>
     <div class="stat-card green">
       <div class="stat-label">Success</div>
       <div class="stat-value" id="stat-success">-</div>
-      <div class="stat-sub">deploy สำเร็จ</div>
     </div>
     <div class="stat-card red">
       <div class="stat-label">Failed</div>
       <div class="stat-value" id="stat-failed">-</div>
-      <div class="stat-sub">deploy ล้มเหลว</div>
     </div>
     <div class="stat-card purple">
       <div class="stat-label">Latest Version</div>
@@ -239,7 +236,7 @@
   <!-- Deploy Log Table -->
   <div class="card">
     <div class="card-header">
-      <h2>📋 Deploy History</h2>
+      <h2>Deploy History</h2>
       <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
     <table>
@@ -257,8 +254,7 @@
       <tbody id="deploy-table">
         <tr><td colspan="7">
           <div class="empty-state">
-            <div class="icon">🚀</div>
-            กำลังโหลด Deploy History...
+            Loading Deploy History...
           </div>
         </td></tr>
       </tbody>
@@ -289,7 +285,7 @@
     document.getElementById('stat-version').textContent = data.latest ? 'v' + data.latest.version : '-';
     document.getElementById('stat-latest-time').textContent = data.latest
       ? new Date(data.latest.deployedAt).toLocaleString('th-TH')
-      : 'ยังไม่มี deploy';
+      : 'Have no deploy yet';
   }
 
   async function loadDeploys() {
@@ -300,8 +296,7 @@
     if (logs.length === 0) {
       tbody.innerHTML = `<tr><td colspan="7">
         <div class="empty-state">
-          <div class="icon">🚀</div>
-          ยังไม่มีประวัติ Deploy — ลอง push โค้ดดูสิ!
+          Don't have any history Deploy yet — Try push code!
         </div>
       </td></tr>`;
       return;
